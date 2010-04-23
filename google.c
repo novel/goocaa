@@ -8,18 +8,6 @@
 
 #include "google.h"
 
-struct contacts_t {
-	GSList *contacts;
-};
-
-struct response_data_t {
-	char *data;
-	size_t len;
-	ne_buffer *buf;
-};
-
-void process_entry(xmlNode *node, struct contacts_t*);
-
 char* process_contacts(xmlNode *node, struct contacts_t *contacts_data)
 {
 	xmlNode *cur_node = NULL;

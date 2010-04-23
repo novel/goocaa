@@ -1,8 +1,17 @@
 #if !defined(__GOOGLE_H)
 #define __GOOGLE_H
 
+#include <ne_basic.h>
 #include <libxml/parser.h>
 #include <glib.h>
+
+struct contacts_t {
+	GSList *contacts;
+};
+
+struct response_data_t {
+	ne_buffer *buf;
+};
 
 struct google_account_t {
 	char *email;
@@ -21,5 +30,7 @@ struct cont_node {
 	char *title;
 	char *email;
 };
+
+void process_entry(xmlNode *node, struct contacts_t*);
 
 #endif /* !defined(__GOOGLE_H) */
