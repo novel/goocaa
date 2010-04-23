@@ -27,11 +27,9 @@ char* process_contacts(xmlNode *node, struct contacts_t *contacts_data)
 
 	for (cur_node = node->children; cur_node; cur_node = cur_node->next) {
 		if (cur_node->type == XML_ELEMENT_NODE) {
-			//printf("node type: Element, name: %s\n", cur_node->name);
 			if (strcmp("entry", (char *)cur_node->name) == 0) {
 				process_entry(cur_node, contacts_data);
 			} else if (strcmp("link", (char *)cur_node->name) == 0) {
-				//printf("got link!\n");
 				if (strcmp((char*)xmlGetProp(cur_node, (const xmlChar *)"rel"), 
 							"next") == 0) {
 					int j = 0;
@@ -138,19 +136,6 @@ char *google_client_login(struct google_account_t *account)
 	return ret;
 }
 
-#if 0
-void google_contacts_full(const char *auth_token)
-{
-//	printf("hello world\n");
-	struct contacts_t *contacts_data;
-
-	contacts_data = malloc(sizeof(struct contacts_t));
-	contacts_data->contacts = NULL;
-
-	google_contacts_full_(auth_token);
-}
-#endif
-
 GSList* google_contacts_full(const char *auth_token)
 {
 	ne_session *sess;
@@ -195,15 +180,12 @@ GSList* google_contacts_full(const char *auth_token)
 		xmlNode *root_element = NULL;
 
 		doc = xmlReadMemory(resp_data->buf->data, resp_data->buf->length, "", NULL, 0);
-		//printf("====\n%s\n======\n", resp_data->buf->data);
 
 		root_element = xmlDocGetRootElement(doc);
 
 		next_url = process_contacts(root_element, contacts_data);
-		//printf("next_url = %s\n", next_url);
 
 		free(url);
-		//url = NULL;
 		url = next_url;
 		
 		ne_request_destroy(req);
