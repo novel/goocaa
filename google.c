@@ -8,17 +8,6 @@
 
 #include "google.h"
 
-
-void print_cont_node(struct cont_node* node, void *userdata) {
-//	struct cont_node *contact = userdata;
-	
-	printf("node <title: %s, email: %s>\n", node->title, node->email);
-	//printf("node <email: %s, title: %s>\n", 
-	//		node->email, "dd");
-}
-
-enum states { NONE = 0, ENTRY = 1, TITLE = 2};
-
 struct contacts_t {
 	GSList *contacts;
 };
@@ -220,11 +209,6 @@ GSList* google_contacts_full(const char *auth_token)
 		ne_request_destroy(req);
 	}
 	
-	//printf("length = %d\n", g_slist_length(contacts_data->contacts));
-
-	/*g_slist_foreach(contacts_data->contacts,
-			print_cont_node, NULL);*/
-
 	return contacts_data->contacts;
 }
 

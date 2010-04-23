@@ -22,6 +22,4 @@ struct cont_node {
 	char *email;
 };
 
-void print_cont_node(struct cont_node*, void *);
-
 #endif /* !defined(__GOOGLE_H) */
