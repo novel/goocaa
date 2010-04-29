@@ -29,7 +29,7 @@ int main(int argc, char **argv)
 	ret = g_key_file_load_from_file(conf, rc, G_KEY_FILE_NONE, NULL);
 
 	if (ret == FALSE) {
-		fprintf(stderr, "Failed to load config file!\n");
+		fprintf(stderr, "Failed to load config file: %s - %s\n", rc, g_strerror(errno));
 		exit(1);
 	}
 
