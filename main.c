@@ -15,6 +15,7 @@ int main(int argc, char **argv)
 	GSList *contacts, *matches;
 	int i = 0;
 	struct cont_node* contact;
+	GError *error = NULL;
 
 	if (2 != argc) {
 		fprintf(stderr, "usage: %s pattern\n", argv[0]);
@@ -26,10 +27,11 @@ int main(int argc, char **argv)
 	rc = g_strdup_printf("%s/.goocaarc", g_get_home_dir());
 
 	conf = g_key_file_new();
-	ret = g_key_file_load_from_file(conf, rc, G_KEY_FILE_NONE, NULL);
+	ret = g_key_file_load_from_file(conf, rc, G_KEY_FILE_NONE, &error);
 
 	if (ret == FALSE) {
-		fprintf(stderr, "Failed to load config file: %s - %s\n", rc, g_strerror(errno));
+		fprintf(stderr, "Failed to load config file: %s - %s\n", rc, error->message);
+		g_error_free(error);
 		exit(1);
 	}
 
