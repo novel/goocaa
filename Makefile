@@ -1,6 +1,8 @@
+PREFIX?=/usr/local
 CC=gcc
 CFLAGS=-Wall -g
 RM=rm -f
+INSTALL=install
 GOOCAA=goocaa
 
 all:
@@ -8,4 +10,7 @@ all:
 
 clean:
 	${RM} ${GOOCAA}
-	${RM} *.core	
+	${RM} *.core
+
+install: all
+	${INSTALL} ${GOOCAA} ${PREFIX}/bin

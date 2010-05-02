@@ -95,7 +95,7 @@ int main(int argc, char **argv)
 			matches = g_slist_append(matches, contact);
 	}
 	
-	printf("%d match(es)\n", g_slist_length(matches));
+	printf("%d match(es) for '%s'\n", g_slist_length(matches), pattern);
 
 	i = 0;
 	while ((contact = g_slist_nth_data(matches, i++)) != NULL) {
