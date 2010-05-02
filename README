@@ -1,0 +1,37 @@
+About
+-------------------
+goocaa is a CLI client to Google Contacts API
+designed to be used as mutt's 'query_command'.
+
+Build && Install
+-------------------
+To build goocaa the following libraries are 
+required:
+
+ * neon
+ * glib-2.0
+ * libxml-2.0
+
+To build and install, just execute:
+
+make install
+
+Configuration
+-------------------
+Create file ~/.goocaarc with the following contents:
+
+=============
+[default]
+email = you@gmail.com
+passwd = yourpass
+=============
+
+Then add the following to your ~/.muttrc:
+
+set query_command = "/usr/local/bin/goocaa %s"
+
+More details on query_command:
+
+http://www.mutt.org/doc/manual/manual-4.html#ss4.5
+
+Roman Bogorodskiy, bogorodskiy@gmail.com
