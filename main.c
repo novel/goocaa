@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <glib.h>
 
@@ -8,7 +9,7 @@
 
 int main(int argc, char **argv)
 {
-	char *auth_str, *pattern, *rc;
+	char *auth_str, *pattern, *rc, *profile = "default";
 	GKeyFile *conf;
 	gboolean ret;
 	struct google_account_t *account;
@@ -16,12 +17,26 @@ int main(int argc, char **argv)
 	int i = 0;
 	struct cont_node* contact;
 	GError *error = NULL;
+	int ch;
 
-	if (2 != argc) {
-		fprintf(stderr, "usage: %s pattern\n", argv[0]);
+	while ((ch = getopt(argc, argv, "p:")) != -1) {
+		switch (ch) {
+			case 'p':
+				profile = optarg;
+				break;
+			default:
+				fprintf(stderr, "getopt error\n");
+		}
+	}
+
+	argc -= optind;
+	argv += optind;
+
+	if (1 != argc) {
+		fprintf(stderr, "usage: goocaa pattern\n");
 		exit(1);
 	} else {
-		pattern = argv[1];
+		pattern = argv[0];
 	}
 
 	rc = g_strdup_printf("%s/.goocaarc", g_get_home_dir());
@@ -29,17 +44,28 @@ int main(int argc, char **argv)
 	conf = g_key_file_new();
 	ret = g_key_file_load_from_file(conf, rc, G_KEY_FILE_NONE, &error);
 
-	if (ret == FALSE) {
+	if (FALSE == ret) {
 		fprintf(stderr, "Failed to load config file: %s - %s\n", rc, error->message);
 		g_error_free(error);
 		exit(1);
 	}
 
+	if (FALSE == g_key_file_has_group(conf, profile)) {
+		fprintf(stderr, "Profile '%s' is not defined in the config file\n", profile);
+		exit(1);
+	}
+
 	account = malloc(sizeof(struct google_account_t));
 	account->email = g_key_file_get_string(conf, 
-			"default", "email", NULL);
+			profile, "email", &error);
 	account->passwd = g_key_file_get_string(conf,
-			"default", "passwd", NULL);
+			profile, "passwd", &error);
+
+	if ((account->email == NULL) || (account->passwd == NULL)) {
+		fprintf(stderr, "Error reading info from config file, profile: %s\n", profile);
+		g_error_free(error);
+		exit(1);
+	}
 
 	google_init();
 
@@ -55,15 +81,15 @@ int main(int argc, char **argv)
 
 	while ((contact = g_slist_nth_data(contacts, i++)) != NULL) {
 		gboolean match = FALSE;
-	
+
 		if ((contact->email != NULL) &&
 				(strstr(contact->email, 
 					      pattern) != NULL))
 			match = TRUE;
 
 		if ((contact->title != NULL) &&
-				(strstr(contact->email, pattern) != NULL))
-			match = TRUE;
+		       (strstr(contact->title, pattern) != NULL))
+				match = TRUE;
 
 		if (match == TRUE)
 			matches = g_slist_append(matches, contact);
