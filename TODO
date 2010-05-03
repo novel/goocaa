@@ -1,0 +1,4 @@
+* introduce some more advanced build system (waf?) or 
+  make Makefile not so lame at least
+* run through valgrind to detect mem leaks (there are many of them, though
+  it's not very critical as we're not a daemon)
