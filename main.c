@@ -1,10 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 
 #include <glib.h>
 
+#include "cache.h"
 #include "google.h"
 
 int main(int argc, char **argv)
@@ -18,6 +20,7 @@ int main(int argc, char **argv)
 	struct cont_node* contact;
 	GError *error = NULL;
 	int ch;
+	struct cache_t* cache;
 
 	while ((ch = getopt(argc, argv, "p:")) != -1) {
 		switch (ch) {
@@ -56,7 +59,7 @@ int main(int argc, char **argv)
 	}
 
 	account = malloc(sizeof(struct google_account_t));
-	account->email = g_key_file_get_string(conf, 
+	account->email = g_key_file_get_string(conf,
 			profile, "email", &error);
 	account->passwd = g_key_file_get_string(conf,
 			profile, "passwd", &error);
@@ -67,23 +70,34 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	google_init();
+	cache = cache_load();
 
-	auth_str = google_client_login(account);
+	if ((cache->contacts == NULL) || (time(NULL) - cache->modtime > 60*60*24)) {
+		/* cache is outdated or doesn't exist, fetch info */	
+		google_init();
 
-	if (auth_str == NULL) {
-		fprintf(stderr, "Authentification error\n");
-		exit(1);
-	}
+		auth_str = google_client_login(account);
+
+		if (auth_str == NULL) {
+			fprintf(stderr, "Authentification error\n");
+			exit(1);
+		}
+
+		contacts = google_contacts_full(auth_str);
+	
+		google_destroy();
+
+		cache_dump(contacts);
+	} else
+		contacts = cache->contacts;
 
 	matches = NULL;
-	contacts = google_contacts_full(auth_str);
 
 	while ((contact = g_slist_nth_data(contacts, i++)) != NULL) {
 		gboolean match = FALSE;
 
 		if ((contact->email != NULL) &&
-				(strstr(contact->email, 
+				(strstr(contact->email,
 					      pattern) != NULL))
 			match = TRUE;
 
@@ -113,7 +127,6 @@ int main(int argc, char **argv)
 			printf("%s\t%s\n", email, title);
 	}
 
-	google_destroy();
 
 	return 0;
 }
