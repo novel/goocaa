@@ -8,8 +8,8 @@ struct cache_t {
 	time_t modtime;
 };
 
-void cache_dump(const GSList *contacts);
+void cache_dump(const char *profile, const GSList *contacts);
 
-struct cache_t *cache_load();
+struct cache_t *cache_load(const char *profile);
 
 #endif /* !defined(__CACHE_H) */

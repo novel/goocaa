@@ -70,7 +70,7 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	cache = cache_load();
+	cache = cache_load(profile);
 
 	if ((cache->contacts == NULL) || (time(NULL) - cache->modtime > 60*60*24)) {
 		/* cache is outdated or doesn't exist, fetch info */	
@@ -87,7 +87,7 @@ int main(int argc, char **argv)
 	
 		google_destroy();
 
-		cache_dump(contacts);
+		cache_dump(profile, contacts);
 	} else
 		contacts = cache->contacts;
 

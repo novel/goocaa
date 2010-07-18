@@ -16,22 +16,21 @@ void print_item(gpointer data, gpointer userdata)
 		fprintf(cache, "%s\n%s\n", contact->email, contact->title);
 }
 
-void cache_dump(const GSList *contacts)
+void cache_dump(const char *profile, const GSList *contacts)
 {
 	char *cache_file;
 	FILE *cache;
 
-	cache_file = g_strdup_printf("%s/.goocaa.cache", g_get_home_dir());
+	cache_file = g_strdup_printf("%s/.goocaa.%s.cache", g_get_home_dir(), profile);
 	cache = fopen(cache_file, "w");
 
-	printf("cache_dump\n");
 	g_slist_foreach(contacts, print_item, cache);
 
 	g_free(cache_file);
 	fclose(cache);
 }
 
-struct cache_t *cache_load()
+struct cache_t *cache_load(const char *profile)
 {
 	char *cache_file;
 	FILE *cache;
@@ -40,7 +39,7 @@ struct cache_t *cache_load()
 
 	cache_data = malloc(sizeof(struct cache_t));
 
-	cache_file = g_strdup_printf("%s/.goocaa.cache", g_get_home_dir());
+	cache_file = g_strdup_printf("%s/.goocaa.%s.cache", g_get_home_dir(), profile);
 	cache = fopen(cache_file, "r");
 
 	if (NULL == cache) {
