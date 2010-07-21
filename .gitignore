@@ -1,4 +1,8 @@
 *.core
 *.swp
 *.swo
+*.o
 goocaa
+build
+.lock*
+.waf*
