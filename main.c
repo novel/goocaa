@@ -97,12 +97,12 @@ int main(int argc, char **argv)
 		gboolean match = FALSE;
 
 		if ((contact->email != NULL) &&
-				(strstr(contact->email,
-					      pattern) != NULL))
+				(strcasestr(contact->email,
+					      pattern)))
 			match = TRUE;
 
 		if ((contact->title != NULL) &&
-		       (strstr(contact->title, pattern) != NULL))
+		       (strcasestr(contact->title, pattern)))
 				match = TRUE;
 
 		if (match == TRUE)
