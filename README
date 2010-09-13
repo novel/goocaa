@@ -12,9 +12,15 @@ required:
  * glib-2.0
  * libxml-2.0
 
-To build and install, just execute:
+To build goocaa execute:
 
-make install
+$ ./waf configure build
+
+and then:
+
+$ sudo ./waf install
+
+to install it.
 
 Configuration
 -------------------
