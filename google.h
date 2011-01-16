@@ -10,7 +10,8 @@ struct contacts_t {
 };
 
 struct response_data_t {
-	ne_buffer *buf;
+	char *buf;
+	size_t size;
 };
 
 struct google_account_t {

@@ -2,9 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <ne_basic.h>
 #include <libxml/parser.h>
 #include <glib.h>
+#include <curl/curl.h>
 
 #include "google.h"
 
@@ -20,15 +20,10 @@ char* process_contacts(xmlNode *node, struct contacts_t *contacts_data)
 			} else if (strcmp("link", (char *)cur_node->name) == 0) {
 				if (strcmp((char*)xmlGetProp(cur_node, (const xmlChar *)"rel"), 
 							"next") == 0) {
-					int j = 0;
 					char *next = (char *)xmlGetProp(cur_node, 
 							(const xmlChar *)"href");
 
-					while (j != 3)
-						if (*(next++) == '/')
-							j++;
-
-					next_url = strdup(next - 1);
+					next_url = strdup(next);
 				}
 			}
 		}
@@ -75,18 +70,21 @@ static char *extract_auth_token(const char *response)
 	return ret;
 }
 
-int cb(void *userdata, const char *buf, size_t len) {
+size_t curl_cb(void *buf, size_t size, size_t nmemb, void *userdata) {
+	size_t realsize = size * nmemb;
 	struct response_data_t *resp_data = userdata;
 
-	if (len != 0)
-		ne_buffer_append(resp_data->buf, buf, len);
+	resp_data->buf = realloc(resp_data->buf, resp_data->size + realsize + 1);
+	memcpy(&(resp_data->buf[resp_data->size]), buf, realsize);
+	resp_data->size += realsize;
+	resp_data->buf[resp_data->size] = 0;
 
-	return 0;
+	return size * nmemb;
 }
 
 void google_init()
 {
-	ne_sock_init();
+	curl_global_init(CURL_GLOBAL_DEFAULT);
 }
 
 char *google_client_login(struct google_account_t *account)
@@ -95,31 +93,37 @@ char *google_client_login(struct google_account_t *account)
 	ne_request *req;
 	struct response_data_t *resp_data;
 	char *ret;
+	
 	char *data;
 
-	data = g_strdup_printf("accountType=HOSTED_OR_GOOGLE&Email=%s&Passwd=%s&service=cp&source=novel-goocaa-1", account->email, account->passwd);
+	CURL *curl;
+	CURLcode res;
 
-	sess = ne_session_create("https", "www.google.com", 443);
-	ne_ssl_trust_default_ca(sess);
+	resp_data->buf = NULL;
+	resp_data->size = 0;
 
-	req = ne_request_create(sess, "POST", "/accounts/ClientLogin");
-	ne_set_request_flag(req, NE_REQFLAG_IDEMPOTENT, 0);
-	ne_add_request_header(req, "Content-Type", "application/x-www-form-urlencoded");
-	ne_set_request_body_buffer(req, data, strlen(data));
+	data = g_strdup_printf("accountType=HOSTED_OR_GOOGLE&Email=%s&Passwd=%s&service=cp&source=novel-goocaa-1",
+			account->email, account->passwd);
 
-	resp_data = malloc(sizeof(struct response_data_t));
-	resp_data->buf = ne_buffer_create();
+	curl = curl_easy_init();
 
-	ne_add_response_body_reader(req, ne_accept_always, cb, resp_data);
+	curl_easy_setopt(curl, CURLOPT_URL, "https://www.google.com:443/accounts/ClientLogin");
+	curl_easy_setopt(curl, CURLOPT_POST, 1);
+	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data);
+	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_cb);
+	curl_easy_setopt(curl, CURLOPT_WRITEDATA, resp_data); 
+	
+	res = curl_easy_perform(curl);	
 
-	if (ne_request_dispatch(req)) {
-		   printf("Request failed: %s\n", ne_get_error(sess));
-		   exit(1);
-	}
+	curl_easy_cleanup(curl);
 
-	ret = extract_auth_token(resp_data->buf->data);
+	ret = extract_auth_token(resp_data->buf);
 
-	ne_request_destroy(req);
+/*	if (resp_data != NULL) {
+		if (resp_data->buf != NULL)
+			free(resp_data->buf);
+		free(resp_data);
+	}*/
 
 	return ret;
 }
@@ -128,55 +132,60 @@ GSList* google_contacts_full(const char *auth_token)
 {
 	ne_session *sess;
 	ne_request *req;
-	const char *auth_prefix = "GoogleLogin auth=";
+	const char *auth_prefix = "Authorization: GoogleLogin auth=";
 	char *auth_header;
 	size_t auth_header_length;
-	struct response_data_t *resp_data;
 	struct contacts_t *contacts_data;
 	char *url;
 
 	contacts_data = malloc(sizeof(struct contacts_t));
 	contacts_data->contacts = NULL;
 
-	sess = ne_session_create("https", "www.google.com", 443);
-	ne_ssl_trust_default_ca(sess);
-
-	url = strdup("/m8/feeds/contacts/default/full");
+	url = strdup("https://www.google.com/m8/feeds/contacts/default/full");
 
 	while (url != NULL) {
+		CURL *curl;
+		CURLcode res;
+		struct response_data_t *resp_data = malloc(sizeof (struct response_data_t));
+		struct curl_slist *headers = NULL;
 		char *next_url;
 
-		req = ne_request_create(sess, "GET", url);
+		resp_data->buf = NULL;
+		resp_data->size = 0;
+
+		curl = curl_easy_init();
+
+		curl_easy_setopt(curl, CURLOPT_URL, url);
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_cb);
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, resp_data); 
 
 		auth_header_length = strlen(auth_prefix) + strlen(auth_token) + 1;
 		auth_header = (char *)malloc(auth_header_length * sizeof(char*));
 		snprintf(auth_header, auth_header_length, "%s%s", 
 				auth_prefix, auth_token);
 
-		ne_add_request_header(req, "Authorization", auth_header);
+		headers = curl_slist_append(headers, auth_header);
 
-		resp_data = malloc(sizeof(struct response_data_t));
-		resp_data->buf = ne_buffer_create();
+		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_cb);
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, resp_data); 
 
-		ne_add_response_body_reader(req, ne_accept_always, cb, resp_data);
+		res = curl_easy_perform(curl);
 
-		if (ne_request_dispatch(req) != 0) {
-			   printf("Request failed: %s\n", ne_get_error(sess));
-		}
+		curl_easy_cleanup(curl);
 
 		xmlDoc *doc = NULL;
 		xmlNode *root_element = NULL;
 
-		doc = xmlReadMemory(resp_data->buf->data, resp_data->buf->length, "", NULL, 0);
+		doc = xmlReadMemory(resp_data->buf, resp_data->size, "", NULL, 0);
 
 		root_element = xmlDocGetRootElement(doc);
 
 		next_url = process_contacts(root_element, contacts_data);
 
-		free(url);
+		if (url)
+			free(url);
 		url = next_url;
-		
-		ne_request_destroy(req);
 	}
 	
 	return contacts_data->contacts;
@@ -184,5 +193,5 @@ GSList* google_contacts_full(const char *auth_token)
 
 void google_destroy()
 {
-	ne_sock_exit();
+	curl_global_cleanup();
 }
