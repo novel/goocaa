@@ -181,6 +181,13 @@ GSList* google_contacts_full(const char *auth_token)
 
 		if (url)
 			free(url);
+		
+		if (resp_data) {
+			if (resp_data->buf)
+				free(resp_data->buf);
+			free(resp_data);
+		}
+
 		url = next_url;
 	}
 	
