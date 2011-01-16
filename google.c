@@ -91,7 +91,7 @@ char *google_client_login(struct google_account_t *account)
 {
 	ne_session *sess;
 	ne_request *req;
-	struct response_data_t *resp_data;
+	struct response_data_t *resp_data = malloc(sizeof (struct response_data_t));
 	char *ret;
 	
 	char *data;
@@ -107,7 +107,7 @@ char *google_client_login(struct google_account_t *account)
 
 	curl = curl_easy_init();
 
-	curl_easy_setopt(curl, CURLOPT_URL, "https://www.google.com:443/accounts/ClientLogin");
+	curl_easy_setopt(curl, CURLOPT_URL, "https://www.google.com/accounts/ClientLogin");
 	curl_easy_setopt(curl, CURLOPT_POST, 1);
 	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data);
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_cb);
@@ -119,11 +119,11 @@ char *google_client_login(struct google_account_t *account)
 
 	ret = extract_auth_token(resp_data->buf);
 
-/*	if (resp_data != NULL) {
+	if (resp_data != NULL) {
 		if (resp_data->buf != NULL)
 			free(resp_data->buf);
 		free(resp_data);
-	}*/
+	}
 
 	return ret;
 }
