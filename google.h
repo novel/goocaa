@@ -1,7 +1,6 @@
 #if !defined(__GOOGLE_H)
 #define __GOOGLE_H
 
-#include <ne_basic.h>
 #include <libxml/parser.h>
 #include <glib.h>
 

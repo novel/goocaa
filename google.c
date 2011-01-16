@@ -89,8 +89,6 @@ void google_init()
 
 char *google_client_login(struct google_account_t *account)
 {
-	ne_session *sess;
-	ne_request *req;
 	struct response_data_t *resp_data = malloc(sizeof (struct response_data_t));
 	char *ret;
 	
@@ -130,8 +128,6 @@ char *google_client_login(struct google_account_t *account)
 
 GSList* google_contacts_full(const char *auth_token)
 {
-	ne_session *sess;
-	ne_request *req;
 	const char *auth_prefix = "Authorization: GoogleLogin auth=";
 	char *auth_header;
 	size_t auth_header_length;
