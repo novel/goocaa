@@ -110,6 +110,7 @@ char *google_client_login(struct google_account_t *account)
 	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data);
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_cb);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, resp_data); 
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1);
 	
 	res = curl_easy_perform(curl);	
 
@@ -155,6 +156,7 @@ GSList* google_contacts_full(const char *auth_token)
 	curl = curl_easy_init();
 	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_cb);
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1);
 
 	while (url != NULL) {
 		struct response_data_t *resp_data = malloc(sizeof (struct response_data_t));
