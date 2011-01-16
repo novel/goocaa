@@ -64,9 +64,12 @@ int main(int argc, char **argv)
 	account->passwd = g_key_file_get_string(conf,
 			profile, "passwd", &error);
 
+	g_key_file_free(conf);
+
 	if ((account->email == NULL) || (account->passwd == NULL)) {
 		fprintf(stderr, "Error reading info from config file, profile: %s\n", profile);
 		g_error_free(error);
+		free(account);
 		exit(1);
 	}
 
