@@ -5,12 +5,12 @@ out = 'build'
 def set_options(opt):
     opt.tool_options('compiler_cc')
 
-    opt.add_option('--with-debug', action='store', default=False, help='enable additional debugging')
+    opt.add_option('--with-debug', action='store_true', default=False, help='enable additional debugging')
 
 def configure(conf):
     import Options
 
-    if Options.options.with_debug == "1":
+    if Options.options.with_debug:
         conf.env.append_unique('CFLAGS', ['-Wall -g'])
 
     conf.check_tool('compiler_cc')
