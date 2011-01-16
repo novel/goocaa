@@ -133,42 +133,40 @@ GSList* google_contacts_full(const char *auth_token)
 	size_t auth_header_length;
 	struct contacts_t *contacts_data;
 	char *url;
+	CURL *curl;
+	CURLcode res;
+	struct curl_slist *headers = NULL;
 
 	contacts_data = malloc(sizeof(struct contacts_t));
 	contacts_data->contacts = NULL;
 
+	/* prepare auth header which is the same for all queries */
+	auth_header_length = strlen(auth_prefix) + strlen(auth_token) + 1;
+	auth_header = (char *)malloc(auth_header_length * sizeof(char*));
+	snprintf(auth_header, auth_header_length, "%s%s", 
+			auth_prefix, auth_token);
+
+	headers = curl_slist_append(headers, auth_header);
+
+	/* prepare start url */
 	url = strdup("https://www.google.com/m8/feeds/contacts/default/full");
 
+	/* prepare curl */
+	curl = curl_easy_init();
+	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_cb);
+
 	while (url != NULL) {
-		CURL *curl;
-		CURLcode res;
 		struct response_data_t *resp_data = malloc(sizeof (struct response_data_t));
-		struct curl_slist *headers = NULL;
 		char *next_url;
 
 		resp_data->buf = NULL;
 		resp_data->size = 0;
 
-		curl = curl_easy_init();
-
 		curl_easy_setopt(curl, CURLOPT_URL, url);
-		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_cb);
-		curl_easy_setopt(curl, CURLOPT_WRITEDATA, resp_data); 
-
-		auth_header_length = strlen(auth_prefix) + strlen(auth_token) + 1;
-		auth_header = (char *)malloc(auth_header_length * sizeof(char*));
-		snprintf(auth_header, auth_header_length, "%s%s", 
-				auth_prefix, auth_token);
-
-		headers = curl_slist_append(headers, auth_header);
-
-		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_cb);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, resp_data); 
 
 		res = curl_easy_perform(curl);
-
-		curl_easy_cleanup(curl);
 
 		xmlDoc *doc = NULL;
 		xmlNode *root_element = NULL;
@@ -190,6 +188,9 @@ GSList* google_contacts_full(const char *auth_token)
 
 		url = next_url;
 	}
+
+	/* clean up */
+	curl_easy_cleanup(curl);
 	
 	return contacts_data->contacts;
 }
