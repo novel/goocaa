@@ -31,3 +31,6 @@ def build(bld):
             target = 'goocaa',
             install_path = '${PREFIX}/bin',
             uselib=['NEON', 'LIBXML', 'GLIB', 'CURL'])
+
+def dist(ctx):
+    ctx.algo = 'tar.gz'
