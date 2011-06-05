@@ -1,4 +1,8 @@
 # vim:ft=python
+
+APPNAME = 'goocaa'
+VERSION = '0.1'
+
 top = '.'
 out = 'build'
 
