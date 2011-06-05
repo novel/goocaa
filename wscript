@@ -6,7 +6,7 @@ VERSION = '0.1'
 top = '.'
 out = 'build'
 
-def set_options(opt):
+def options(opt):
     opt.tool_options('compiler_cc')
 
     opt.add_option('--with-debug', action='store_true', default=False, help='enable additional debugging')
@@ -26,7 +26,7 @@ def configure(conf):
 
 def build(bld):
     t = bld(
-            features = ['cc', 'cprogram'],
+            features = ['c', 'cprogram'],
             source = ['main.c', 'google.c', 'cache.c'],
             target = 'goocaa',
             install_path = '${PREFIX}/bin',
