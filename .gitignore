@@ -6,3 +6,4 @@ goocaa
 build
 .lock*
 .waf*
+*.tar.gz

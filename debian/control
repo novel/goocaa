@@ -1,0 +1,19 @@
+Source: goocaa
+Section: mail
+Priority: optional
+Maintainer: Roman Bogorodskiy <novel@FreeBSD.org>
+Build-Depends: debhelper (>= 7.0.50),
+ libglib2.0-dev,
+ libxml2-dev (>= 2.6),
+ libcurl4-openssl-dev (>= 7.15.0-2),
+# waf
+ python
+Standards-Version: 3.9.1
+Homepage: https://github.com/novel/goocaa
+
+Package: goocaa
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: CLI client to Google Contacts API.
+ goocaa is a CLI client to Google Contacts API
+ designed to be used as mutt's 'query_command'.

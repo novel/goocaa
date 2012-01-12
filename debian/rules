@@ -1,0 +1,21 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@ 
+
+WAF=./waf
+
+override_dh_auto_clean:
+	$(WAF) distclean
+	rm -fr build
+	rm -fr .waf*
+	rm -fr .lock-wscript
+
+override_dh_auto_configure:
+	$(WAF)  configure --prefix /usr
+
+override_dh_auto_build:
+	$(WAF) build  -v
+
+override_dh_auto_install:
+	$(WAF) install --destdir $(CURDIR)/debian/goocaa/
