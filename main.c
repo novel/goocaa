@@ -40,7 +40,7 @@ int main(int argc, char **argv)
 {
 	char *auth_str, *pattern, *rc, *profile = "default";
 	GKeyFile *conf;
-	gboolean ret;
+	gboolean ret, quiet = FALSE;
 	struct google_account_t *account;
 	GSList *contacts, *matches;
 	int i = 0;
@@ -49,10 +49,13 @@ int main(int argc, char **argv)
 	int ch;
 	struct cache_t* cache;
 
-	while ((ch = getopt(argc, argv, "p:")) != -1) {
+	while ((ch = getopt(argc, argv, "p:q")) != -1) {
 		switch (ch) {
 			case 'p':
 				profile = optarg;
+				break;
+			case 'q':
+				quiet = TRUE;
 				break;
 			default:
 				fprintf(stderr, "getopt error\n");
@@ -138,7 +141,8 @@ int main(int argc, char **argv)
 			matches = g_slist_append(matches, contact);
 	}
 	
-	printf("%d match(es) for '%s'\n", g_slist_length(matches), pattern);
+	if (!quiet)
+		printf("%d match(es) for '%s'\n", g_slist_length(matches), pattern);
 
 	i = 0;
 	while ((contact = g_slist_nth_data(matches, i++)) != NULL) {
@@ -153,7 +157,10 @@ int main(int argc, char **argv)
 				title = contact->title;
 
 
-			printf("%s\t%s\n", email, title);
+			if (quiet)
+				printf("\"%s\" <%s>\n", title, email);
+			else
+				printf("%s\t%s\n", email, title);
 	}
 
 	g_key_file_free(conf);
