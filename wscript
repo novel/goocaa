@@ -15,7 +15,7 @@ def configure(conf):
     import Options
 
     if Options.options.with_debug:
-        conf.env.append_unique('CFLAGS', ['-Wall -g'])
+        conf.env.append_unique('CFLAGS', ['-Wall', '-g'])
 
     conf.check_tool('compiler_cc')
 
