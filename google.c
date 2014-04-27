@@ -120,9 +120,8 @@ void google_init()
 char *google_client_login(struct google_account_t *account)
 {
 	struct response_data_t *resp_data = malloc(sizeof (struct response_data_t));
-	char *ret;
-	
-	char *data;
+	char *ret = NULL;
+	gchar *data = NULL;
 
 	CURL *curl;
 	CURLcode res;
@@ -142,9 +141,14 @@ char *google_client_login(struct google_account_t *account)
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, resp_data); 
 	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1);
 	
-	res = curl_easy_perform(curl);	
+	res = curl_easy_perform(curl);
 
-	curl_easy_cleanup(curl);
+        if (res != CURLE_OK) {
+            fprintf(stderr, "Request failed: %s\n",
+                    curl_easy_strerror(res));
+            goto cleanup;
+        }
+
 
 	ret = extract_auth_token(resp_data->buf);
 
@@ -153,6 +157,11 @@ char *google_client_login(struct google_account_t *account)
 			free(resp_data->buf);
 		free(resp_data);
 	}
+
+cleanup:
+	curl_easy_cleanup(curl);
+        if (data)
+            g_free(data);
 
 	return ret;
 }
