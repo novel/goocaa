@@ -69,7 +69,7 @@ int main(int argc, char **argv)
 	argv += optind;
 
 	if (1 != argc) {
-		fprintf(stderr, "usage: goocaa pattern\n");
+		fprintf(stderr, "usage: goocaa [-qt] [-p profile] pattern\n");
 		exit(1);
 	} else {
 		pattern = argv[0];
