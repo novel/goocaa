@@ -65,6 +65,7 @@ struct cache_t *cache_load(const char *profile)
 	char key[256], value[256];
 
 	cache_data = malloc(sizeof(struct cache_t));
+        cache_data->contacts = NULL;
 
 	cache_file = g_strdup_printf("%s/.goocaa.%s.cache", g_get_home_dir(), profile);
 	cache = fopen(cache_file, "r");
