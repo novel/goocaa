@@ -88,6 +88,9 @@ static char *extract_auth_token(const char *response)
 	char *auth_str;
 	char *ret;
 
+        if (response == NULL)
+            return NULL;
+
 	auth_str = strstr(response, "Auth=");
 	if (auth_str == NULL)
 		return NULL;
